@@ -1,0 +1,65 @@
+<% layout("/layout/boilerplate") %>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow p-4 rounded">
+
+                <div class="text-center mb-4">
+                    <h2 class="fw-bold mb-2">WanderLust</h2>
+                    <p class="text-muted small">Book unique stays, anytime, anywhere</p>
+                </div>
+
+                <% if (error && error.length > 0) { %>
+                    <div class="alert alert-danger"><%= error %></div>
+                <% } %>
+                <% if (success && success.length > 0) { %>
+                    <div class="alert alert-success"><%= success %></div>
+                <% } %>
+
+                <form action="/login" method="POST" novalidate>
+                    <!-- Username / Email -->
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <input name="username" id="username" type="text" class="form-control" required>
+                        <div class="invalid-feedback" id="username-error"></div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input name="password" id="password" type="password" class="form-control" required>
+                        <div class="invalid-feedback">Password is required.</div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Login</button>
+
+                    <p class="text-center mt-3">
+                        Don’t have an account? <a href="/signup">Sign up here</a>
+                    </p>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const form = document.querySelector("form");
+const usernameInput = document.getElementById("username");
+const usernameError = document.getElementById("username-error");
+
+form.addEventListener("submit", function(e) {
+    const value = usernameInput.value.trim();
+
+    // Gmail-only regex
+    if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(value)) {
+        e.preventDefault(); // stop submission
+        usernameError.textContent = "Please use a valid Gmail address.";
+        usernameInput.classList.add("is-invalid");
+    } else {
+        usernameError.textContent = "";
+        usernameInput.classList.remove("is-invalid");
+    }
+});
+</script>
