@@ -1,5 +1,5 @@
 if (process.env.NODE_ENV !== "production") {
-    require("dotenv").config();
+    require("dotenv").config(); // Make sure this runs first
 }
 
 const express = require("express");
@@ -19,17 +19,21 @@ const reviewRoutes = require("./routes/review");
 const userRoutes = require("./routes/user");
 
 const app = express();
+
+// ✅ Load environment variables before using them
 const dbUrl = process.env.ATLASDB_URL;
 
 mongoose.connect(dbUrl)
     .then(() => console.log("MongoDB connected"))
     .catch(err => console.log(err));
+
 app.engine("ejs", ejsMate);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "public")));
+
 const store = MongoStore.create({
     mongoUrl: dbUrl,
     touchAfter: 24 * 3600,
@@ -58,6 +62,7 @@ app.use(session(sessionOptions));
 app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
+
 // -------------------- SAVE RETURN URL --------------------
 app.use((req, res, next) => {
   if (req.session.returnTo) {
@@ -69,18 +74,22 @@ app.use((req, res, next) => {
 passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
+
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
     res.locals.currentUser = req.user;
     next();
 });
+
 app.use("/listings", listingRoutes);
 app.use("/listings/:id/reviews", reviewRoutes);
 app.use("/", userRoutes);
+
 app.get("/", (req, res) => {
     res.redirect("/listings");
 });
+
 app.listen(8080, () => {
     console.log("Server running on port 8080");
 });
