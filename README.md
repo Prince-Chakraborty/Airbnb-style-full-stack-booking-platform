@@ -1,6 +1,6 @@
-# 🏠 Listings Web Application
+# 🏠 Airbnb-Style Full Stack Booking Platform
 
-A full-stack web application that allows users to create, view, edit, and manage property listings with secure authentication and authorization.
+A full-stack web application that allows users to create, view, edit, and manage property listings with secure authentication and authorization.  
 
 This project focuses on **real-world backend concepts** such as session management, access control, and data validation instead of being a simple CRUD tutorial.
 
@@ -35,7 +35,7 @@ This project focuses on **real-world backend concepts** such as session manageme
 
 ---
 
-## ⚠ Known Limitation
+## ⚠ Known Limitations
 - Login redirect may reset due to Passport session regeneration  
 - **Planned improvement:** Persistent redirect handling using session store  
 
@@ -62,4 +62,4 @@ This project focuses on **real-world backend concepts** such as session manageme
 ## ▶ How to Run Locally
 1. Clone the repository:
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Prince-Chakraborty/Airbnb-style-full-stack-booking-platform.git
