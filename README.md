@@ -1,8 +1,8 @@
-# 🏠 Airbnb-Style Full Stack Booking Platform
+# 🏠 Wanderlust – Full-Stack Booking Platform
 
-A full-stack web application that allows users to create, view, edit, and manage property listings with secure authentication and authorization.  
+**Wanderlust** is a production-ready full-stack web application inspired by Airbnb, allowing users to create, view, edit, and manage property listings with secure authentication and authorization.
 
-This project focuses on **real-world backend concepts** such as session management, access control, and data validation instead of being a simple CRUD tutorial.
+This project focuses on **real-world backend concepts** such as session management, access control, and data validation, going beyond a simple CRUD tutorial.
 
 ---
 
@@ -51,11 +51,11 @@ This project focuses on **real-world backend concepts** such as session manageme
 ---
 
 ## 🧠 What I Learned
-- Middleware-based access control  
-- Secure session handling and authentication  
-- MVC architecture in Express.js  
-- Real-world error handling and input validation  
-- Designing backend logic beyond tutorials  
+- Implemented middleware-based access control  
+- Designed secure session handling and authentication workflows  
+- Applied MVC architecture in Express.js  
+- Handled real-world errors and input validation  
+- Built scalable backend logic beyond tutorials  
 
 ---
 
