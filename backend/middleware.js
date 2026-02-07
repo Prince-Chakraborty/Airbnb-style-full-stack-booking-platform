@@ -4,8 +4,6 @@ const ExpressError = require("./utils/ExpressError");
 const { listingSchema, reviewSchema } = require("./schema");
 
 // ---------- LOGIN CHECK ----------
-// ---------- LOGIN CHECK ----------
-// ---------- LOGIN CHECK ----------
 module.exports.isLoggedIn = (req, res, next) => {
   if (!req.isAuthenticated()) {
     // ✅ only set once
@@ -18,11 +16,9 @@ module.exports.isLoggedIn = (req, res, next) => {
   next();
 };
 
-
 // ---------- ALREADY LOGGED IN ----------
 module.exports.alreadyLoggedIn = (req, res, next) => {
   if (req.isAuthenticated()) {
-    // If user visits login/signup manually while logged in, redirect safely
     const path = req.originalUrl;
     if (path === "/login" || path === "/signup") {
       return res.redirect("/listings");
@@ -30,11 +26,6 @@ module.exports.alreadyLoggedIn = (req, res, next) => {
   }
   next();
 };
-
-
-
-
-
 
 // ---------- OWNER CHECK ----------
 module.exports.isOwner = async (req, res, next) => {
@@ -66,17 +57,15 @@ module.exports.isReviewAuthor = async (req, res, next) => {
 };
 
 // ---------- LISTING VALIDATION ----------
-// ---------- LISTING VALIDATION ----------
 module.exports.validateListing = (req, res, next) => {
   if (!req.body.listing) req.body.listing = {};
 
   const { error } = listingSchema.validate({ listing: req.body.listing });
 
   if (error) {
-    // Convert Joi validation object to readable string
     const msg = error.details.map(el => el.message).join(", ");
-    req.flash("error", msg); // always a string
-    return res.redirect("back"); // go back to the form
+    req.flash("error", msg);
+    return res.redirect("back");
   }
   next();
 };
@@ -89,7 +78,7 @@ module.exports.validateReview = (req, res, next) => {
 
   if (error) {
     const msg = error.details.map(el => el.message).join(", ");
-    req.flash("error", msg); // <-- flash string
+    req.flash("error", msg);
     return res.redirect("back");
   }
   next();
