@@ -29,19 +29,18 @@
   <link rel="stylesheet" href="/css/rating.css" />
 </head>
 
-<!-- ✅ IMPORTANT FIX HERE -->
 <body class="d-flex flex-column min-vh-100">
 
   <!-- Navbar -->
   <%- include("../includes/navbar.ejs") %>
 
   <!-- Main Content -->
-  <main class="container flex-grow-1">
+  <main class="container flex-grow-1 mt-4">
     <%- include("../includes/flash.ejs") %>
     <%- body %>
   </main>
 
-  <!-- Footer (sticks to bottom) -->
+  <!-- Footer -->
   <%- include("../includes/footer.ejs") %>
 
   <!-- JS -->
