@@ -1,20 +1,36 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const Review = require("./review.js");
+const Review = require("./review");
 
 const listingSchema = new Schema({
     title: {
         type: String,
-        required: true,
+        required: [true, "Title cannot be empty"],
     },
-    description: String,
+    description: {
+        type: String,
+        required: [true, "Description cannot be empty"],
+    },
     image: {
-        url: String,
+        url: {
+            type: String,
+            default: "/images/default.jpg"
+        },
         filename: String,
     },
-    price: Number,
-    location: String,
-    country: String,
+    price: {
+        type: Number,
+        required: [true, "Price is required"],
+        min: [0, "Price cannot be negative"],
+    },
+    location: {
+        type: String,
+        required: [true, "Location is required"],
+    },
+    country: {
+        type: String,
+        required: [true, "Country is required"],
+    },
     reviews: [
         {
             type: Schema.Types.ObjectId,
@@ -24,8 +40,9 @@ const listingSchema = new Schema({
     owner: {
         type: Schema.Types.ObjectId,
         ref: "User",
+        required: true,
     },
-});
+}, { timestamps: true }); // add timestamps for createdAt and updatedAt
 
 // Delete all reviews associated with a listing when it is deleted
 listingSchema.post("findOneAndDelete", async (listing) => {
