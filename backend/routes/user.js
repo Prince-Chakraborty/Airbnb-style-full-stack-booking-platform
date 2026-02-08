@@ -9,7 +9,7 @@ router.get("/signup", alreadyLoggedIn, users.renderSignup);
 router.post("/signup", users.signup);
 
 // -------------------- LOGIN --------------------
-router.get("/login",users.renderLoginForm);
+router.get("/login", alreadyLoggedIn, users.renderLoginForm);
 router.post(
   "/login",
   passport.authenticate("local", {
@@ -17,16 +17,20 @@ router.post(
     failureFlash: true
   }),
   (req, res) => {
-    // After login, redirect to originally requested page OR /listings
-    const redirectUrl = res.locals.returnTo || "/listings";
+    const redirectUrl = req.session.returnTo || "/listings";
     delete req.session.returnTo;
     req.flash("success", `Welcome back, ${req.user.username}!`);
     res.redirect(redirectUrl);
-
   }
 );
 
 // -------------------- LOGOUT --------------------
-router.get("/logout", users.deleteForm);
+router.get("/logout", (req, res, next) => {
+  req.logout(err => {
+    if (err) return next(err);
+    req.flash("success", "Successfully logged out!");
+    res.redirect("/listings");
+  });
+});
 
 module.exports = router;
