@@ -26,7 +26,7 @@ module.exports.signup = async (req, res, next) => {
     const newUser = new User({ email, username });
     await User.register(newUser, password);
 
-    // ✅ Optional: auto-login for better UX
+    // ✅ Auto-login after signup
     req.login(newUser, (err) => {
       if (err) return next(err);
       req.flash("success", `Welcome, ${username}! Your account is created.`);
@@ -51,7 +51,7 @@ module.exports.loginForm = (req, res) => {
 };
 
 // ---------- LOGOUT ----------
-module.exports.deleteForm = (req, res, next) => {
+module.exports.logout = (req, res, next) => {
   req.logout((err) => {
     if (err) return next(err);
     req.flash("success", "You are logged out!");
