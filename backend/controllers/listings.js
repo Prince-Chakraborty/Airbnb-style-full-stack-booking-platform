@@ -50,7 +50,7 @@ module.exports.createListing = async (req, res) => {
       description: listing.description || "",
       location: listing.location || "",
       country: listing.country || "",
-      price: listing.price || 0,
+      price: Number(listing.price) || 0,   // ✅ FIXED
       owner: req.user._id
     });
 
@@ -60,7 +60,10 @@ module.exports.createListing = async (req, res) => {
         filename: req.file.filename
       };
     } else {
-      newListing.image = { url: "/images/default.jpg", filename: "default.jpg" };
+      newListing.image = {
+        url: "/images/default.jpg",
+        filename: "default.jpg"
+      };
     }
 
     await newListing.save();
@@ -102,14 +105,12 @@ module.exports.updateListing = async (req, res) => {
       return res.redirect("/listings");
     }
 
-    // Update primitive fields only
     listing.title = req.body.listing.title || listing.title;
     listing.description = req.body.listing.description || listing.description;
     listing.location = req.body.listing.location || listing.location;
     listing.country = req.body.listing.country || listing.country;
-    listing.price = req.body.listing.price || listing.price;
+    listing.price = Number(req.body.listing.price) || listing.price; // ✅ FIXED
 
-    // Update image if uploaded
     if (req.file) {
       listing.image = {
         url: req.file.path.replace("\\", "/"),
