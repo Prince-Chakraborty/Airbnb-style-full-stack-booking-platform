@@ -1,17 +1,17 @@
 const Listing = require("../models/listing");
 
-// -------------------- LIST ALL LISTINGS (WITH SEARCH, FILTER, SORT, PAGINATION) --------------------
 module.exports.index = async (req, res) => {
   try {
     let { search, filter, sort, page } = req.query;
     const ITEMS_PER_PAGE = 6;
-    page = parseInt(page) || 1;
+    page = Number(page) || 1;
 
     let query = {};
 
     // SEARCH
     if (search && search.trim() !== "") {
-      const regex = new RegExp(search, "i");
+      const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const regex = new RegExp(escapeRegex(search), "i");
       query.$or = [
         { title: regex },
         { location: regex },
@@ -19,9 +19,9 @@ module.exports.index = async (req, res) => {
       ];
     }
 
-    // FILTER
-    if (filter && filter.trim() !== "") {
-      query.type = filter; // assuming each listing has a 'type' field for filters
+    // FILTER (check if 'type' field exists in schema)
+    if (filter && filter.trim() !== "" && Listing.schema.path("type")) {
+      query.type = filter;
     }
 
     // COUNT TOTAL
@@ -31,7 +31,7 @@ module.exports.index = async (req, res) => {
     let sortOption = {};
     if (sort === "price-low") sortOption.price = 1;
     else if (sort === "price-high") sortOption.price = -1;
-    else if (sort === "trending") sortOption.createdAt = -1; // example trending logic: latest
+    else if (sort === "trending") sortOption.createdAt = -1;
 
     // FETCH PAGINATED RESULTS
     const allListings = await Listing.find(query)
@@ -41,19 +41,18 @@ module.exports.index = async (req, res) => {
       .populate("owner");
 
     const totalPages = Math.ceil(totalListings / ITEMS_PER_PAGE);
-    const currentPage = page;
 
     res.render("listings/index.ejs", {
-      allListings,
+      allListings: allListings || [],
       search: search || "",
       filter: filter || "",
       sort: sort || "",
-      currentPage,
-      totalPages
+      currentPage: page,
+      totalPages: totalPages || 1
     });
 
   } catch (e) {
-    console.error(e);
+    console.error("Listings Index Error:", e);
     req.flash("error", "Failed to load listings");
     res.redirect("/");
   }
