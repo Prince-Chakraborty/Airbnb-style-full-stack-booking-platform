@@ -123,7 +123,10 @@ module.exports.updateListing = async (req, res) => {
     listing.description = req.body.listing.description || listing.description;
     listing.location = req.body.listing.location || listing.location;
     listing.country = req.body.listing.country || listing.country;
-    listing.price = Number(req.body.listing.price) || listing.price;
+    if (req.body.listing.price !== undefined) {
+  listing.price = Number(req.body.listing.price);
+    }
+
 
     if (req.file) {
       listing.image = {
