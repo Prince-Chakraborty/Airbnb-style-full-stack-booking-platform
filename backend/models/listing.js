@@ -2,54 +2,62 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const Review = require("./review");
 
-const listingSchema = new Schema({
+const listingSchema = new Schema(
+  {
     title: {
-        type: String,
-        required: [true, "Title cannot be empty"],
+      type: String,
+      required: [true, "Title cannot be empty"],
+      trim: true,
     },
     description: {
-        type: String,
-        required: [true, "Description cannot be empty"],
+      type: String,
+      required: [true, "Description cannot be empty"],
+      trim: true,
     },
     image: {
-        url: {
-            type: String,
-            default: "/images/default.jpg"
-        },
-        filename: String,
+      url: {
+        type: String,
+        default: "/images/default.jpg",
+      },
+      filename: {
+        type: String,
+        default: "default.jpg",
+      },
     },
     price: {
-        type: Number,
-        required: [true, "Price is required"],
-        min: [0, "Price cannot be negative"],
+      type: Number,
+      required: [true, "Price is required"],
+      min: [0, "Price cannot be negative"],
     },
     location: {
-        type: String,
-        required: [true, "Location is required"],
+      type: String,
+      required: [true, "Location is required"],
+      index: true,
     },
     country: {
-        type: String,
-        required: [true, "Country is required"],
+      type: String,
+      required: [true, "Country is required"],
     },
     reviews: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: "Review",
-        },
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Review",
+      },
     ],
     owner: {
-        type: Schema.Types.ObjectId,
-        ref: "User",
-        required: true,
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
-}, { timestamps: true }); // add timestamps for createdAt and updatedAt
+  },
+  { timestamps: true }
+);
 
-// Delete all reviews associated with a listing when it is deleted
-listingSchema.post("findOneAndDelete", async (listing) => {
-    if (listing) {
-        await Review.deleteMany({ _id: { $in: listing.reviews } });
-    }
+// Delete associated reviews when listing is deleted
+listingSchema.post("findOneAndDelete", async function (doc) {
+  if (doc && doc.reviews.length) {
+    await Review.deleteMany({ _id: { $in: doc.reviews } });
+  }
 });
 
-const Listing = mongoose.model("Listing", listingSchema);
-module.exports = Listing;
+module.exports = mongoose.model("Listing", listingSchema);
