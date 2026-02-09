@@ -1,15 +1,16 @@
 const Listing = require("../models/listing");
 
 // -------------------- INDEX --------------------
+// -------------------- INDEX (Part 1: Listings Page) --------------------
 module.exports.index = async (req, res) => {
   try {
     let { search, filter, sort, page } = req.query;
-    const ITEMS_PER_PAGE = 6;
+    const ITEMS_PER_PAGE = 9; // 9 listings per page
     page = Number(page) || 1;
 
     let query = {};
 
-    // SEARCH
+    // SEARCH by title, location, country
     if (search && search.trim() !== "") {
       const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const regex = new RegExp(escapeRegex(search), "i");
@@ -20,12 +21,12 @@ module.exports.index = async (req, res) => {
       ];
     }
 
-    // FILTER
-    if (filter && filter.trim() !== "" && Listing.schema.path("type")) {
-      query.type = filter;
+    // FILTER by type/category (trending, rooms, mountains, pools, castles)
+    if (filter && filter.trim() !== "") {
+      query.type = filter; // ensure 'type' field exists in Listing schema
     }
 
-    // COUNT TOTAL
+    // COUNT total listings for pagination
     const totalListings = await Listing.countDocuments(query);
 
     // SORT
@@ -34,15 +35,16 @@ module.exports.index = async (req, res) => {
     else if (sort === "price-high") sortOption.price = -1;
     else if (sort === "trending") sortOption.createdAt = -1;
 
-    // FETCH PAGINATED RESULTS
+    // FETCH paginated results
     const allListings = await Listing.find(query)
       .sort(sortOption)
       .skip((page - 1) * ITEMS_PER_PAGE)
       .limit(ITEMS_PER_PAGE)
-      .populate("owner");
+      .populate("owner"); // fetch owner info
 
     const totalPages = Math.ceil(totalListings / ITEMS_PER_PAGE);
 
+    // RENDER listings page
     res.render("listings/index.ejs", {
       allListings: allListings || [],
       search: search || "",
@@ -50,7 +52,7 @@ module.exports.index = async (req, res) => {
       sort: sort || "",
       currentPage: page,
       totalPages: totalPages || 1,
-      activePage: "explore" // ✅ added
+      activePage: "explore" // fixes navbar ReferenceError
     });
 
   } catch (e) {
@@ -59,6 +61,7 @@ module.exports.index = async (req, res) => {
     res.redirect("/");
   }
 };
+
 
 // -------------------- NEW --------------------
 module.exports.renderNewForm = (req, res) => {
