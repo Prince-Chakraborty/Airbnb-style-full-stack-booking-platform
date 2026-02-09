@@ -1,24 +1,54 @@
 const Listing = require("../models/listing");
 
-// -------------------- LIST ALL LISTINGS (WITH SEARCH) --------------------
+// -------------------- LIST ALL LISTINGS (SEARCH, FILTER, SORT, PAGINATION) --------------------
 module.exports.index = async (req, res) => {
   try {
-    const { search } = req.query;
+    let { search, filter, sort, page } = req.query;
+    page = parseInt(page) || 1;
+    const limit = 9; // 9 listings per page
+
     let query = {};
 
+    // ---------- SEARCH ----------
     if (search && search.trim() !== "") {
-      const regex = new RegExp(search, "i"); // case-insensitive search
-      query = {
-        $or: [
-          { title: regex },
-          { location: regex },
-          { country: regex }
-        ]
-      };
+      const regex = new RegExp(search, "i");
+      query.$or = [
+        { title: regex },
+        { location: regex },
+        { country: regex },
+      ];
     }
 
-    const allListings = await Listing.find(query).populate("owner");
-    res.render("listings/index.ejs", { allListings });
+    // ---------- FILTER ----------
+    if (filter && filter.trim() !== "") {
+      query.type = filter; // assuming each listing has a 'type' field matching filter
+    }
+
+    // ---------- COUNT TOTAL ----------
+    const totalListings = await Listing.countDocuments(query);
+    const totalPages = Math.ceil(totalListings / limit);
+
+    // ---------- SORT ----------
+    let sortOption = {};
+    if (sort === "price-low") sortOption.price = 1;
+    else if (sort === "price-high") sortOption.price = -1;
+    else if (sort === "trending") sortOption.createdAt = -1; // newest first
+
+    // ---------- FETCH LISTINGS ----------
+    const allListings = await Listing.find(query)
+      .sort(sortOption)
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .populate("owner");
+
+    res.render("listings/index.ejs", {
+      allListings,
+      currentPage: page,
+      totalPages,
+      search: search || "",
+      filter: filter || "",
+      sort: sort || "",
+    });
   } catch (e) {
     req.flash("error", "Failed to load listings");
     res.redirect("/");
@@ -33,7 +63,7 @@ module.exports.showListings = async (req, res) => {
       .populate({
         path: "reviews",
         options: { sort: { _id: -1 } },
-        populate: { path: "author" }
+        populate: { path: "author" },
       })
       .populate("owner");
 
@@ -65,18 +95,19 @@ module.exports.createListing = async (req, res) => {
       location: listing.location || "",
       country: listing.country || "",
       price: Number(listing.price) || 0,
-      owner: req.user._id
+      owner: req.user._id,
+      type: listing.type || "rooms", // default type for filter
     });
 
     if (req.file) {
       newListing.image = {
         url: req.file.path.replace("\\", "/"),
-        filename: req.file.filename
+        filename: req.file.filename,
       };
     } else {
       newListing.image = {
         url: "/images/default.jpg",
-        filename: "default.jpg"
+        filename: "default.jpg",
       };
     }
 
@@ -124,14 +155,14 @@ module.exports.updateListing = async (req, res) => {
     listing.location = req.body.listing.location || listing.location;
     listing.country = req.body.listing.country || listing.country;
     if (req.body.listing.price !== undefined) {
-  listing.price = Number(req.body.listing.price);
+      listing.price = Number(req.body.listing.price);
     }
-
+    listing.type = req.body.listing.type || listing.type;
 
     if (req.file) {
       listing.image = {
         url: req.file.path.replace("\\", "/"),
-        filename: req.file.filename
+        filename: req.file.filename,
       };
     }
 
