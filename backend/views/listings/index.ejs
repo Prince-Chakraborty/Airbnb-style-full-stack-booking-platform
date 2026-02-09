@@ -28,10 +28,6 @@
     margin: 0.2rem 0 0 0;
   }
 
-  .tax-info {
-    display: none;
-  }
-
   .tax-toggle {
     border: 1px solid black;
     border-radius: 1rem;
@@ -135,8 +131,10 @@
           <div class="card-body">
             <p class="card-text">
               <b><%= listing.title || 'Untitled Listing' %></b><br />
-              &#8377; <%= listing.price ? listing.price.toLocaleString('en-IN') : '0' %> / night
-              <i class="tax-info"> &nbsp; +18% GST</i>
+              &#8377; 
+              <span class="listing-price" data-base="<%= listing.price || 0 %>">
+                <%= listing.price ? listing.price.toLocaleString('en-IN') : '0' %>
+              </span> / night
             </p>
           </div>
 
@@ -162,9 +160,15 @@
   const taxSwitch = document.getElementById("flexSwitchCheckDefault");
   if (taxSwitch) {
     taxSwitch.addEventListener("change", () => {
-      const taxInfo = document.querySelectorAll(".tax-info");
-      taxInfo.forEach(info => {
-        info.style.display = taxSwitch.checked ? "inline" : "none";
+      const prices = document.querySelectorAll(".listing-price");
+      prices.forEach(priceEl => {
+        const basePrice = Number(priceEl.dataset.base);
+        if (taxSwitch.checked) {
+          const total = Math.round(basePrice * 1.18);
+          priceEl.textContent = total.toLocaleString('en-IN');
+        } else {
+          priceEl.textContent = basePrice.toLocaleString('en-IN');
+        }
       });
     });
   }
