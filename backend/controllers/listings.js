@@ -49,7 +49,8 @@ module.exports.index = async (req, res) => {
       filter: filter || "",
       sort: sort || "",
       currentPage: page,
-      totalPages: totalPages || 1
+      totalPages: totalPages || 1,
+      activePage: "explore" // ✅ added
     });
 
   } catch (e) {
@@ -61,7 +62,9 @@ module.exports.index = async (req, res) => {
 
 // -------------------- NEW --------------------
 module.exports.renderNewForm = (req, res) => {
-  res.render("listings/new.ejs");
+  res.render("listings/new.ejs", {
+    activePage: "newListing" // ✅ added
+  });
 };
 
 // -------------------- CREATE --------------------
@@ -88,7 +91,10 @@ module.exports.showListings = async (req, res) => {
       req.flash("error", "Listing not found");
       return res.redirect("/listings");
     }
-    res.render("listings/show.ejs", { listing });
+    res.render("listings/show.ejs", { 
+      listing,
+      activePage: "explore" // ✅ added
+    });
   } catch (e) {
     console.error("Show Listing Error:", e);
     req.flash("error", "Failed to load listing");
@@ -104,7 +110,10 @@ module.exports.renderEditForm = async (req, res) => {
       req.flash("error", "Listing not found");
       return res.redirect("/listings");
     }
-    res.render("listings/edit.ejs", { listing });
+    res.render("listings/edit.ejs", { 
+      listing,
+      activePage: "editListing" // ✅ added
+    });
   } catch (e) {
     console.error("Edit Listing Error:", e);
     req.flash("error", "Failed to load edit form");
