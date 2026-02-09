@@ -1,9 +1,23 @@
 const Listing = require("../models/listing");
 
-// -------------------- LIST ALL LISTINGS --------------------
+// -------------------- LIST ALL LISTINGS (WITH SEARCH) --------------------
 module.exports.index = async (req, res) => {
   try {
-    const allListings = await Listing.find({}).populate("owner");
+    const { search } = req.query;
+    let query = {};
+
+    if (search && search.trim() !== "") {
+      const regex = new RegExp(search, "i"); // case-insensitive search
+      query = {
+        $or: [
+          { title: regex },
+          { location: regex },
+          { country: regex }
+        ]
+      };
+    }
+
+    const allListings = await Listing.find(query).populate("owner");
     res.render("listings/index.ejs", { allListings });
   } catch (e) {
     req.flash("error", "Failed to load listings");
@@ -18,7 +32,7 @@ module.exports.showListings = async (req, res) => {
     const listing = await Listing.findById(id)
       .populate({
         path: "reviews",
-        options: { sort: { _id: -1 } }, // newest first
+        options: { sort: { _id: -1 } },
         populate: { path: "author" }
       })
       .populate("owner");
@@ -50,7 +64,7 @@ module.exports.createListing = async (req, res) => {
       description: listing.description || "",
       location: listing.location || "",
       country: listing.country || "",
-      price: Number(listing.price) || 0,   // ✅ FIXED
+      price: Number(listing.price) || 0,
       owner: req.user._id
     });
 
@@ -109,7 +123,7 @@ module.exports.updateListing = async (req, res) => {
     listing.description = req.body.listing.description || listing.description;
     listing.location = req.body.listing.location || listing.location;
     listing.country = req.body.listing.country || listing.country;
-    listing.price = Number(req.body.listing.price) || listing.price; // ✅ FIXED
+    listing.price = Number(req.body.listing.price) || listing.price;
 
     if (req.file) {
       listing.image = {
