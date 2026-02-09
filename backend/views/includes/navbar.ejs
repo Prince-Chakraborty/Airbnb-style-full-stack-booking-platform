@@ -43,7 +43,7 @@
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <!-- Left Links -->
       <div class="navbar-nav me-auto">
-        <a class="nav-link <% if (activePage === 'explore') { %>active<% } %>" href="/listings">Explore</a>
+        <a class="nav-link <% if (typeof activePage !== 'undefined' && activePage === 'explore') { %>active<% } %>" href="/listings">Explore</a>
       </div>
 
       <!-- Search Form -->
@@ -54,7 +54,7 @@
 
       <!-- Right Links -->
       <div class="navbar-nav ms-auto align-items-center">
-        <a href="/listings/new" class="btn btn-airbnb-home">Airbnb your home</a>
+        <a href="/listings/new" class="btn btn-airbnb-home <% if (typeof activePage !== 'undefined' && activePage === 'newListing') { %>active<% } %>">Airbnb your home</a>
 
         <% if(!currentUser) { %>
           <a class="nav-link" href="/signup"><b>Sign up</b></a>
