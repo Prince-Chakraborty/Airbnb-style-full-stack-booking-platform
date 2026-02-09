@@ -16,8 +16,11 @@
     transition: opacity 0.2s ease;
   }
 
-  .filter:hover {
+  .filter:hover,
+  .filter.active {
     opacity: 1;
+    font-weight: bold;
+    color: #000;
   }
 
   .filter p {
@@ -94,7 +97,7 @@
 <div id="filters">
   <% const filterTypes = ["trending","rooms","iconic","mountains","castles","pools","camping","farms","arctic","domes","boats"]; %>
   <% filterTypes.forEach(type => { %>
-    <div class="filter" data-type="<%= type %>">
+    <div class="filter <%= filter === type ? 'active' : '' %>" data-type="<%= type %>">
       <div><i class="fa-solid fa-circle"></i></div>
       <p><%= type.charAt(0).toUpperCase() + type.slice(1) %></p>
     </div>
