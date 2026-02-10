@@ -29,8 +29,7 @@ const listingSchema = new Schema(
       required: [true, "Price is required"],
       min: [0, "Price cannot be negative"],
     },
-
-    // ✅ REQUIRED FOR FILTERS
+    // ✅ REQUIRED FOR FILTERS & FIX DEFAULT
     type: {
       type: String,
       required: true,
@@ -47,9 +46,9 @@ const listingSchema = new Schema(
         "domes",
         "boats"
       ],
-      index: true
+      index: true,
+      default: "trending", // fallback default to avoid validation error
     },
-
     location: {
       type: String,
       required: [true, "Location is required"],
