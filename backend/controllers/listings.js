@@ -1,18 +1,18 @@
 const Listing = require("../models/listing");
 
-// -------------------- INDEX --------------------
-// -------------------- INDEX (Part 1: Listings Page) --------------------
+// ==================== INDEX ====================
 module.exports.index = async (req, res) => {
   try {
     let { search, filter, sort, page } = req.query;
-    const ITEMS_PER_PAGE = 9; // 9 listings per page
+    const ITEMS_PER_PAGE = 9;
     page = Number(page) || 1;
 
     let query = {};
 
-    // SEARCH by title, location, country
+    // SEARCH
     if (search && search.trim() !== "") {
-      const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const escapeRegex = str =>
+        str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const regex = new RegExp(escapeRegex(search), "i");
       query.$or = [
         { title: regex },
@@ -21,91 +21,101 @@ module.exports.index = async (req, res) => {
       ];
     }
 
-    // FILTER by type/category (trending, rooms, mountains, pools, castles)
+    // FILTER
     if (filter && filter.trim() !== "") {
-      query.type = filter; // ensure 'type' field exists in Listing schema
+      query.type = filter;
     }
 
-    // COUNT total listings for pagination
+    // SORT
+    let sortOption = { createdAt: -1 };
+    if (sort === "price-low") sortOption = { price: 1 };
+    if (sort === "price-high") sortOption = { price: -1 };
+    if (sort === "trending") sortOption = { createdAt: -1 };
+
     const totalListings = await Listing.countDocuments(query);
 
-    // SORT
-    let sortOption = {};
-    if (sort === "price-low") sortOption.price = 1;
-    else if (sort === "price-high") sortOption.price = -1;
-    else if (sort === "trending") sortOption.createdAt = -1;
-
-    // FETCH paginated results
     const allListings = await Listing.find(query)
       .sort(sortOption)
       .skip((page - 1) * ITEMS_PER_PAGE)
       .limit(ITEMS_PER_PAGE)
-      .populate("owner"); // fetch owner info
+      .populate("owner");
 
     const totalPages = Math.ceil(totalListings / ITEMS_PER_PAGE);
 
-    // RENDER listings page
     res.render("listings/index.ejs", {
-      allListings: allListings || [],
+      allListings,
       search: search || "",
       filter: filter || "",
       sort: sort || "",
       currentPage: page,
-      totalPages: totalPages || 1,
-      activePage: "explore" // fixes navbar ReferenceError
+      totalPages,
+      activePage: "explore"
     });
 
-  } catch (e) {
-    console.error("Listings Index Error:", e);
+  } catch (err) {
+    console.error("INDEX ERROR:", err);
     req.flash("error", "Failed to load listings");
     res.redirect("/");
   }
 };
 
-
-// -------------------- NEW --------------------
+// ==================== NEW ====================
 module.exports.renderNewForm = (req, res) => {
   res.render("listings/new.ejs", {
-    activePage: "newListing" // ✅ added
+    activePage: "newListing"
   });
 };
 
-// -------------------- CREATE --------------------
+// ==================== CREATE ====================
 module.exports.createListing = async (req, res) => {
   try {
     const listing = new Listing(req.body.listing);
     listing.owner = req.user._id;
-    if (req.file) listing.image = req.file.path;
+
+    if (req.file) {
+      listing.image = {
+        url: req.file.path,
+        filename: req.file.filename
+      };
+    }
+
     await listing.save();
     req.flash("success", "Listing created successfully!");
     res.redirect(`/listings/${listing._id}`);
-  } catch (e) {
-    console.error("Create Listing Error:", e);
+  } catch (err) {
+    console.error("CREATE ERROR:", err);
     req.flash("error", "Failed to create listing");
     res.redirect("/listings/new");
   }
 };
 
-// -------------------- SHOW --------------------
+// ==================== SHOW ====================
 module.exports.showListings = async (req, res) => {
   try {
-    const listing = await Listing.findById(req.params.id).populate("owner");
+    const listing = await Listing.findById(req.params.id)
+      .populate("owner")
+      .populate({
+        path: "reviews",
+        populate: { path: "author" }
+      });
+
     if (!listing) {
       req.flash("error", "Listing not found");
       return res.redirect("/listings");
     }
-    res.render("listings/show.ejs", { 
+
+    res.render("listings/show.ejs", {
       listing,
-      activePage: "explore" // ✅ added
+      activePage: "explore"
     });
-  } catch (e) {
-    console.error("Show Listing Error:", e);
+  } catch (err) {
+    console.error("SHOW ERROR:", err);
     req.flash("error", "Failed to load listing");
     res.redirect("/listings");
   }
 };
 
-// -------------------- EDIT --------------------
+// ==================== EDIT ====================
 module.exports.renderEditForm = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
@@ -113,42 +123,52 @@ module.exports.renderEditForm = async (req, res) => {
       req.flash("error", "Listing not found");
       return res.redirect("/listings");
     }
-    res.render("listings/edit.ejs", { 
+
+    res.render("listings/edit.ejs", {
       listing,
-      activePage: "editListing" // ✅ added
+      activePage: "editListing"
     });
-  } catch (e) {
-    console.error("Edit Listing Error:", e);
-    req.flash("error", "Failed to load edit form");
+  } catch (err) {
+    console.error("EDIT ERROR:", err);
     res.redirect("/listings");
   }
 };
 
-// -------------------- UPDATE --------------------
+// ==================== UPDATE ====================
 module.exports.updateListing = async (req, res) => {
   try {
     const { id } = req.params;
-    const listing = await Listing.findByIdAndUpdate(id, req.body.listing, { new: true });
-    if (req.file) listing.image = req.file.path;
-    await listing.save();
+    const listing = await Listing.findByIdAndUpdate(
+      id,
+      req.body.listing,
+      { new: true }
+    );
+
+    if (req.file) {
+      listing.image = {
+        url: req.file.path,
+        filename: req.file.filename
+      };
+      await listing.save();
+    }
+
     req.flash("success", "Listing updated successfully!");
     res.redirect(`/listings/${listing._id}`);
-  } catch (e) {
-    console.error("Update Listing Error:", e);
+  } catch (err) {
+    console.error("UPDATE ERROR:", err);
     req.flash("error", "Failed to update listing");
     res.redirect(`/listings/${req.params.id}/edit`);
   }
 };
 
-// -------------------- DELETE --------------------
+// ==================== DELETE ====================
 module.exports.destroyListing = async (req, res) => {
   try {
-    const { id } = req.params;
-    await Listing.findByIdAndDelete(id);
+    await Listing.findByIdAndDelete(req.params.id);
     req.flash("success", "Listing deleted successfully!");
     res.redirect("/listings");
-  } catch (e) {
-    console.error("Delete Listing Error:", e);
+  } catch (err) {
+    console.error("DELETE ERROR:", err);
     req.flash("error", "Failed to delete listing");
     res.redirect("/listings");
   }
