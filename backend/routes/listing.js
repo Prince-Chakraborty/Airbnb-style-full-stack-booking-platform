@@ -33,7 +33,7 @@ router.put(
   "/:id",
   isLoggedIn,
   isOwner,
-  upload.single("listing[image]"),
+  upload.single("image"),
   validateListing,
   listingController.updateListing
 );
