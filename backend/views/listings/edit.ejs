@@ -58,6 +58,25 @@
                 <div class="invalid-feedback">Location should be valid</div>
             </div>
 
+            <!-- TYPE (REQUIRED) -->
+            <div class="mb-3">
+                <label class="form-label">Type</label>
+                <select name="listing[type]" class="form-select" required>
+                    <option value="" disabled>Select type</option>
+                    <option value="trending" <%= listing.type === 'trending' ? 'selected' : '' %>>Trending</option>
+                    <option value="rooms" <%= listing.type === 'rooms' ? 'selected' : '' %>>Rooms</option>
+                    <option value="iconic" <%= listing.type === 'iconic' ? 'selected' : '' %>>Iconic</option>
+                    <option value="mountains" <%= listing.type === 'mountains' ? 'selected' : '' %>>Mountains</option>
+                    <option value="castles" <%= listing.type === 'castles' ? 'selected' : '' %>>Castles</option>
+                    <option value="pools" <%= listing.type === 'pools' ? 'selected' : '' %>>Pools</option>
+                    <option value="camping" <%= listing.type === 'camping' ? 'selected' : '' %>>Camping</option>
+                    <option value="farms" <%= listing.type === 'farms' ? 'selected' : '' %>>Farms</option>
+                    <option value="arctic" <%= listing.type === 'arctic' ? 'selected' : '' %>>Arctic</option>
+                    <option value="domes" <%= listing.type === 'domes' ? 'selected' : '' %>>Domes</option>
+                    <option value="boats" <%= listing.type === 'boats' ? 'selected' : '' %>>Boats</option>
+                </select>
+            </div>
+
             <!-- Submit -->
             <button class="btn btn-dark edit-btn mt-3">Update Listing</button>
         </form>
