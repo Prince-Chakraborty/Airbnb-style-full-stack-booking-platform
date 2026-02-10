@@ -17,7 +17,7 @@ router.get("/new", isLoggedIn, listingController.renderNewForm);
 router.post(
   "/",
   isLoggedIn, // ensures user is logged in
-  upload.single("listing[image]"), // handles image upload
+  upload.single("image"), // handles image upload
   validateListing,
   listingController.createListing
 );
