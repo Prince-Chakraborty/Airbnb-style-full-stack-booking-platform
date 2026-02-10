@@ -6,66 +6,46 @@ module.exports.listingSchema = Joi.object({
     title: Joi.string()
       .min(5)
       .max(100)
-      .required()
-      .messages({
-        "string.empty": "Title cannot be empty",
-        "string.min": "Title should be at least 5 characters",
-        "string.max": "Title cannot exceed 100 characters",
-      }),
+      .required(),
 
     description: Joi.string()
       .min(20)
       .max(1000)
-      .required()
-      .messages({
-        "string.empty": "Description cannot be empty",
-        "string.min": "Description should be at least 20 characters",
-        "string.max": "Description cannot exceed 1000 characters",
-      }),
+      .required(),
 
     location: Joi.string()
       .pattern(/^[a-zA-Z\s]+$/)
-      .required()
-      .messages({
-        "string.empty": "Location cannot be empty",
-        "string.pattern.base": "Location can only contain letters and spaces",
-      }),
+      .required(),
 
     country: Joi.string()
       .pattern(/^[a-zA-Z\s]+$/)
-      .required()
-      .messages({
-        "string.empty": "Country cannot be empty",
-        "string.pattern.base": "Country can only contain letters and spaces",
-      }),
+      .required(),
 
     price: Joi.number()
       .min(0)
-      .required()
-      .messages({
-        "number.base": "Price must be a number",
-        "number.min": "Price cannot be negative",
-        "any.required": "Price is required",
-      }),
+      .required(),
 
+    // ✅ ADD TYPE HERE
+    type: Joi.string()
+      .valid(
+        "trending",
+        "rooms",
+        "iconic",
+        "mountains",
+        "castles",
+        "pools",
+        "camping",
+        "farms",
+        "arctic",
+        "domes",
+        "boats"
+      )
+      .required(),
+    
+    // OPTIONAL IMAGE
     image: Joi.object({
       url: Joi.string().uri(),
       filename: Joi.string(),
-    }).optional() // ✅ optional so listings without image also pass
-  }).required(),
-});
-
-// ==================== REVIEW SCHEMA ====================
-module.exports.reviewSchema = Joi.object({
-  review: Joi.object({
-    rating: Joi.number()
-      .min(1)
-      .max(5)
-      .required(),
-
-    comment: Joi.string()
-      .min(10)
-      .max(500)
-      .required()
-  }).required(),
+    }).allow(null),
+  }).required()
 });
