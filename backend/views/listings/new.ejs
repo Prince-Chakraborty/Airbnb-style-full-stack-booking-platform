@@ -33,14 +33,13 @@
         ></textarea>
       </div>
 
-      <!-- IMAGE (IMPORTANT FIX) -->
+      <!-- IMAGE -->
       <div class="mb-3">
         <label class="form-label">Upload Image</label>
         <input
           name="image"
           type="file"
           class="form-control"
-          required
         />
       </div>
 
@@ -76,6 +75,25 @@
           class="form-control"
           required
         />
+      </div>
+
+      <!-- TYPE (REQUIRED) -->
+      <div class="mb-3">
+        <label class="form-label">Type</label>
+        <select name="listing[type]" class="form-select" required>
+          <option value="" disabled selected>Select type</option>
+          <option value="trending">Trending</option>
+          <option value="rooms">Rooms</option>
+          <option value="iconic">Iconic</option>
+          <option value="mountains">Mountains</option>
+          <option value="castles">Castles</option>
+          <option value="pools">Pools</option>
+          <option value="camping">Camping</option>
+          <option value="farms">Farms</option>
+          <option value="arctic">Arctic</option>
+          <option value="domes">Domes</option>
+          <option value="boats">Boats</option>
+        </select>
       </div>
 
       <button class="btn btn-dark mt-3">Add Listing</button>
