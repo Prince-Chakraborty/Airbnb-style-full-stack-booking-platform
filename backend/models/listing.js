@@ -29,6 +29,27 @@ const listingSchema = new Schema(
       required: [true, "Price is required"],
       min: [0, "Price cannot be negative"],
     },
+
+    // ✅ REQUIRED FOR FILTERS
+    type: {
+      type: String,
+      required: true,
+      enum: [
+        "trending",
+        "rooms",
+        "iconic",
+        "mountains",
+        "castles",
+        "pools",
+        "camping",
+        "farms",
+        "arctic",
+        "domes",
+        "boats"
+      ],
+      index: true
+    },
+
     location: {
       type: String,
       required: [true, "Location is required"],
