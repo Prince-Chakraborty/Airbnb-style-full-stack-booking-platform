@@ -41,7 +41,7 @@ const listingSchema = new Schema(
     price: {
       type: Number,
       required: [true, "Price is required"],
-      min: [0, "Price cannot be negative"],
+      min: [1, "Price must be a valid positive number"],
     },
 
     type: {
