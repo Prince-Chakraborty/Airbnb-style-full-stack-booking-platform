@@ -1,84 +1,175 @@
 <% layout("/layout/boilerplate") %>
 
-<div class="row mt-3">
-    <div class="col-8 offset-2">
-        <h3>Edit Your Listing</h3>
-        <form method="POST" action="/listings/<%= listing._id %>?_method=PUT" novalidate class="needs-validation" enctype="multipart/form-data">
-            
-            <!-- Title -->
-            <div class="mb-3">
-                <label for="title" class="form-label">Title</label>
-                <input name="listing[title]" value="<%= listing.title %>" type="text" class="form-control" required/>
-                <div class="valid-feedback">Title looks good!</div>
-            </div>
+<div class="row mt-4">
+  <div class="col-8 offset-2">
+    <h3>Edit Your Listing</h3>
 
-            <!-- Description -->
-            <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea name="listing[description]" class="form-control" required><%= listing.description %></textarea>
-                <div class="invalid-feedback">Please enter a short description</div>
-            </div>
+    <form
+      method="POST"
+      action="/listings/<%= listing._id %>?_method=PUT"
+      enctype="multipart/form-data"
+      class="needs-validation"
+      novalidate
+    >
 
-            <!-- Current Image Preview -->
-            <div class="mb-3">
-                <label class="form-label">Current Image</label><br/>
-                <% if(listing.image && listing.image.url) { %>
-                    <img src="<%= listing.image.url.startsWith('http') ? listing.image.url : '/' + listing.image.url %>" 
-                         style="width:320px; height:180px; object-fit:cover; border-radius:10px; margin-bottom:10px;">
-                <% } else { %>
-                    <img src="/images/default.jpg" 
-                         style="width:320px; height:180px; object-fit:cover; border-radius:10px; margin-bottom:10px;">
-                <% } %>
-            </div>
+      <!-- TITLE -->
+      <div class="mb-3">
+        <label class="form-label">Title</label>
+        <input
+          name="listing[title]"
+          value="<%= listing.title %>"
+          type="text"
+          class="form-control"
+          required
+        />
+        <div class="invalid-feedback">
+          Please enter a title.
+        </div>
+      </div>
 
-            <!-- Upload New Image -->
-            <div class="mb-3">
-                <label for="image" class="form-label">Upload New Image</label>
-                <input name="listing[image]" type="file" class="form-control"/>
-            </div>
+      <!-- DESCRIPTION -->
+      <div class="mb-3">
+        <label class="form-label">Description</label>
+        <textarea
+          name="listing[description]"
+          class="form-control"
+          required
+        ><%= listing.description %></textarea>
+        <div class="invalid-feedback">
+          Please enter a description.
+        </div>
+      </div>
 
-            <!-- Price & Country -->
-            <div class="row">
-                <div class="mb-3 col-md-4">
-                    <label for="price" class="form-label">Price</label>
-                    <input name="listing[price]" value="<%= listing.price %>" type="number" class="form-control" required/>
-                    <div class="invalid-feedback">Price should be valid</div>
-                </div>
-                <div class="mb-3 col-md-8">
-                    <label for="country" class="form-label">Country</label>
-                    <input name="listing[country]" value="<%= listing.country %>" type="text" class="form-control" required/>
-                    <div class="invalid-feedback">Country name should be valid</div>
-                </div>
-            </div>
+      <!-- CURRENT IMAGES -->
+      <div class="mb-3">
+        <label class="form-label">Current Images</label>
+        <div class="d-flex flex-wrap gap-3">
+          <% if (listing.images && listing.images.length > 0) { %>
+            <% listing.images.forEach(img => { %>
+              <img 
+                src="<%= img.url %>" 
+                style="width:200px; height:130px; object-fit:cover; border-radius:10px;"
+              />
+            <% }) %>
+          <% } else { %>
+            <img 
+              src="/images/default.jpg"
+              style="width:200px; height:130px; object-fit:cover; border-radius:10px;"
+            />
+          <% } %>
+        </div>
+      </div>
 
-            <!-- Location -->
-            <div class="mb-3">
-                <label for="location" class="form-label">Location</label>
-                <input name="listing[location]" value="<%= listing.location %>" type="text" class="form-control" required/>
-                <div class="invalid-feedback">Location should be valid</div>
-            </div>
+      <!-- UPLOAD NEW IMAGES -->
+      <div class="mb-3">
+        <label class="form-label">Upload New Images</label>
+        <input
+          name="images"
+          type="file"
+          class="form-control"
+          multiple
+        />
+        <small class="text-muted">
+          Uploading new images will replace existing ones.
+        </small>
+      </div>
 
-            <!-- TYPE (REQUIRED) -->
-            <div class="mb-3">
-                <label class="form-label">Type</label>
-                <select name="listing[type]" class="form-select" required>
-                    <option value="" disabled>Select type</option>
-                    <option value="trending" <%= listing.type === 'trending' ? 'selected' : '' %>>Trending</option>
-                    <option value="rooms" <%= listing.type === 'rooms' ? 'selected' : '' %>>Rooms</option>
-                    <option value="iconic" <%= listing.type === 'iconic' ? 'selected' : '' %>>Iconic</option>
-                    <option value="mountains" <%= listing.type === 'mountains' ? 'selected' : '' %>>Mountains</option>
-                    <option value="castles" <%= listing.type === 'castles' ? 'selected' : '' %>>Castles</option>
-                    <option value="pools" <%= listing.type === 'pools' ? 'selected' : '' %>>Pools</option>
-                    <option value="camping" <%= listing.type === 'camping' ? 'selected' : '' %>>Camping</option>
-                    <option value="farms" <%= listing.type === 'farms' ? 'selected' : '' %>>Farms</option>
-                    <option value="arctic" <%= listing.type === 'arctic' ? 'selected' : '' %>>Arctic</option>
-                    <option value="domes" <%= listing.type === 'domes' ? 'selected' : '' %>>Domes</option>
-                    <option value="boats" <%= listing.type === 'boats' ? 'selected' : '' %>>Boats</option>
-                </select>
-            </div>
+      <!-- PRICE + COUNTRY -->
+      <div class="row">
+        <div class="mb-3 col-md-4">
+          <label class="form-label">Price (₹)</label>
+          <input
+            name="listing[price]"
+            value="<%= listing.price %>"
+            type="number"
+            class="form-control"
+            min="0"
+            step="0.01"
+            required
+          />
+          <div class="invalid-feedback">
+            Please enter a valid price.
+          </div>
+        </div>
 
-            <!-- Submit -->
-            <button class="btn btn-dark edit-btn mt-3">Update Listing</button>
-        </form>
-    </div>
+        <div class="mb-3 col-md-8">
+          <label class="form-label">Country</label>
+          <input
+            name="listing[country]"
+            value="<%= listing.country %>"
+            type="text"
+            class="form-control"
+            required
+          />
+          <div class="invalid-feedback">
+            Please enter a country.
+          </div>
+        </div>
+      </div>
+
+      <!-- LOCATION -->
+      <div class="mb-3">
+        <label class="form-label">Location</label>
+        <input
+          name="listing[location]"
+          value="<%= listing.location %>"
+          type="text"
+          class="form-control"
+          required
+        />
+        <div class="invalid-feedback">
+          Please enter a location.
+        </div>
+      </div>
+
+      <!-- TYPE -->
+      <div class="mb-3">
+        <label class="form-label">Type</label>
+        <select
+          name="listing[type]"
+          class="form-select"
+          required
+        >
+          <option value="" disabled>Select type</option>
+          <option value="trending" <%= listing.type === 'trending' ? 'selected' : '' %>>Trending</option>
+          <option value="rooms" <%= listing.type === 'rooms' ? 'selected' : '' %>>Rooms</option>
+          <option value="iconic" <%= listing.type === 'iconic' ? 'selected' : '' %>>Iconic</option>
+          <option value="mountains" <%= listing.type === 'mountains' ? 'selected' : '' %>>Mountains</option>
+          <option value="castles" <%= listing.type === 'castles' ? 'selected' : '' %>>Castles</option>
+          <option value="pools" <%= listing.type === 'pools' ? 'selected' : '' %>>Pools</option>
+          <option value="camping" <%= listing.type === 'camping' ? 'selected' : '' %>>Camping</option>
+          <option value="farms" <%= listing.type === 'farms' ? 'selected' : '' %>>Farms</option>
+          <option value="arctic" <%= listing.type === 'arctic' ? 'selected' : '' %>>Arctic</option>
+          <option value="domes" <%= listing.type === 'domes' ? 'selected' : '' %>>Domes</option>
+          <option value="boats" <%= listing.type === 'boats' ? 'selected' : '' %>>Boats</option>
+        </select>
+        <div class="invalid-feedback">
+          Please select a category.
+        </div>
+      </div>
+
+      <button class="btn btn-dark mt-3">
+        Update Listing
+      </button>
+
+    </form>
+  </div>
 </div>
+
+<!-- Bootstrap Validation Script -->
+<script>
+  (() => {
+    'use strict'
+    const forms = document.querySelectorAll('.needs-validation')
+
+    Array.from(forms).forEach(form => {
+      form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+      }, false)
+    })
+  })()
+</script>
