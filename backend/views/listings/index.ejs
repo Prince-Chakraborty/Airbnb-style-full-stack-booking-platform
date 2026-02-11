@@ -122,19 +122,18 @@
       <a href="/listings/<%= listing._id %>" class="listing-link col mb-4">
         <div class="card listing-card">
 
-          <!-- ✅ FIXED IMAGE SUPPORT -->
+          <!-- FIXED IMAGE SUPPORT -->
           <img
           src="<%= 
-          listing.images && listing.images.length > 0
-          ? listing.images[0].url
-          : listing.image
-          ? (typeof listing.image === 'string' ? listing.image : listing.image.url)
-          : '/images/default.jpg'
+            listing.images && listing.images.length > 0
+              ? listing.images[0].url
+              : listing.image
+              ? (typeof listing.image === 'string' ? listing.image : listing.image.url)
+              : '/images/default.jpg'
           %>"
           class="card-img-top listing-img"
           alt="listing image"
           />
-
 
           <div class="card-body">
             <p class="card-text">

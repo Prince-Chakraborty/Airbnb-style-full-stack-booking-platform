@@ -1,13 +1,13 @@
 const Listing = require("../models/listing");
 
 // ==================== HELPER ====================
-function getMainImage(listing) {
+function getMainImage(listing, index = 0) {
   if (listing.images && listing.images.length > 0) {
-    return listing.images[0].url;        // New listings
-  } else if (listing.image && listing.image.url) {
-    return listing.image.url;            // Old listings
+    return listing.images[index] ? listing.images[index].url : '/images/default.jpg';
+  } else if (listing.image) {
+    return typeof listing.image === 'string' ? listing.image : listing.image.url;
   } else {
-    return "/images/default.jpg";        // Fallback
+    return '/images/default.jpg';
   }
 }
 
@@ -20,10 +20,8 @@ module.exports.index = async (req, res) => {
 
     let query = {};
 
-    // SEARCH
     if (search && search.trim() !== "") {
-      const escapeRegex = str =>
-        str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       const regex = new RegExp(escapeRegex(search), "i");
       query.$or = [
         { title: regex },
@@ -32,12 +30,10 @@ module.exports.index = async (req, res) => {
       ];
     }
 
-    // FILTER
     if (filter && filter.trim() !== "") {
       query.type = filter;
     }
 
-    // SORT
     let sortOption = { createdAt: -1 };
     if (sort === "price-low") sortOption = { price: 1 };
     if (sort === "price-high") sortOption = { price: -1 };
@@ -55,7 +51,7 @@ module.exports.index = async (req, res) => {
 
     res.render("listings/index.ejs", {
       allListings,
-      getMainImage,           // Pass helper to EJS
+      getMainImage,
       search: search || "",
       filter: filter || "",
       sort: sort || "",
@@ -97,7 +93,6 @@ module.exports.createListing = async (req, res) => {
     const newListing = new Listing(listing);
     newListing.owner = req.user._id;
 
-    // 🖼 Multiple Image Upload
     if (req.files && req.files.length > 0) {
       newListing.images = req.files.map(file => ({
         url: `/uploads/${file.filename}`,
@@ -133,7 +128,7 @@ module.exports.showListings = async (req, res) => {
 
     res.render("listings/show.ejs", {
       listing,
-      mainImageUrl: getMainImage(listing), // Use helper for show page
+      getMainImage,
       activePage: "explore"
     });
 
@@ -179,14 +174,17 @@ module.exports.updateListing = async (req, res) => {
 
     const updatedListing = await Listing.findByIdAndUpdate(id, listing, { new: true });
 
-    // 🖼 Replace Images If New Uploaded
+    // 🖼 Replace images if new uploaded, else preserve old ones
     if (req.files && req.files.length > 0) {
       updatedListing.images = req.files.map(file => ({
         url: `/uploads/${file.filename}`,
         filename: file.filename,
       }));
-      await updatedListing.save();
+    } else if ((!updatedListing.images || updatedListing.images.length === 0) && updatedListing.image) {
+      updatedListing.images = [{ url: typeof updatedListing.image === 'string' ? updatedListing.image : updatedListing.image.url }];
     }
+
+    await updatedListing.save();
 
     req.flash("success", "Listing updated successfully!");
     res.redirect(`/listings/${updatedListing._id}`);
