@@ -69,19 +69,37 @@ module.exports.renderNewForm = (req, res) => {
 // ==================== CREATE ====================
 module.exports.createListing = async (req, res) => {
   try {
-    const listing = new Listing(req.body.listing);
-    listing.owner = req.user._id;
+    const { listing } = req.body;
 
-    if (req.file) {
-      listing.image = {
-        url: req.file.path,
-        filename: req.file.filename
-      };
+    // 🔐 Backend Validation
+    if (!listing.title || !listing.description || !listing.location || !listing.country) {
+      req.flash("error", "All fields are required");
+      return res.redirect("/listings/new");
     }
 
-    await listing.save();
+    // 💰 Price Validation
+    listing.price = Number(listing.price);
+    if (isNaN(listing.price) || listing.price < 0) {
+      req.flash("error", "Price must be a valid positive number");
+      return res.redirect("/listings/new");
+    }
+
+    const newListing = new Listing(listing);
+    newListing.owner = req.user._id;
+
+    // 🖼 Multiple Image Upload
+    if (req.files && req.files.length > 0) {
+      newListing.images = req.files.map(file => ({
+        url: file.path,
+        filename: file.filename,
+      }));
+    }
+
+    await newListing.save();
+
     req.flash("success", "Listing created successfully!");
-    res.redirect(`/listings/${listing._id}`);
+    res.redirect(`/listings/${newListing._id}`);
+
   } catch (err) {
     console.error("CREATE ERROR:", err);
     req.flash("error", "Failed to create listing");
@@ -108,6 +126,7 @@ module.exports.showListings = async (req, res) => {
       listing,
       activePage: "explore"
     });
+
   } catch (err) {
     console.error("SHOW ERROR:", err);
     req.flash("error", "Failed to load listing");
@@ -119,6 +138,7 @@ module.exports.showListings = async (req, res) => {
 module.exports.renderEditForm = async (req, res) => {
   try {
     const listing = await Listing.findById(req.params.id);
+
     if (!listing) {
       req.flash("error", "Listing not found");
       return res.redirect("/listings");
@@ -128,6 +148,7 @@ module.exports.renderEditForm = async (req, res) => {
       listing,
       activePage: "editListing"
     });
+
   } catch (err) {
     console.error("EDIT ERROR:", err);
     res.redirect("/listings");
@@ -138,22 +159,33 @@ module.exports.renderEditForm = async (req, res) => {
 module.exports.updateListing = async (req, res) => {
   try {
     const { id } = req.params;
-    const listing = await Listing.findByIdAndUpdate(
+    const { listing } = req.body;
+
+    // 💰 Price Validation
+    listing.price = Number(listing.price);
+    if (isNaN(listing.price) || listing.price < 0) {
+      req.flash("error", "Price must be a valid positive number");
+      return res.redirect(`/listings/${id}/edit`);
+    }
+
+    const updatedListing = await Listing.findByIdAndUpdate(
       id,
-      req.body.listing,
+      listing,
       { new: true }
     );
 
-    if (req.file) {
-      listing.image = {
-        url: req.file.path,
-        filename: req.file.filename
-      };
-      await listing.save();
+    // 🖼 Replace Images If New Uploaded
+    if (req.files && req.files.length > 0) {
+      updatedListing.images = req.files.map(file => ({
+        url: file.path,
+        filename: file.filename,
+      }));
+      await updatedListing.save();
     }
 
     req.flash("success", "Listing updated successfully!");
-    res.redirect(`/listings/${listing._id}`);
+    res.redirect(`/listings/${updatedListing._id}`);
+
   } catch (err) {
     console.error("UPDATE ERROR:", err);
     req.flash("error", "Failed to update listing");
