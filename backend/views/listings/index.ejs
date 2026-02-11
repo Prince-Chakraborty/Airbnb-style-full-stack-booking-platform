@@ -122,8 +122,11 @@
       <a href="/listings/<%= listing._id %>" class="listing-link col mb-4">
         <div class="card listing-card">
 
+          <!-- ✅ FIXED IMAGE -->
           <img
-            src="<%= listing.image && listing.image.url ? (listing.image.url.startsWith('http') ? listing.image.url : '/' + listing.image.url) : '/images/default.jpg' %>"
+            src="<%= listing.images && listing.images.length > 0 
+                  ? listing.images[0].url 
+                  : '/images/default.jpg' %>"
             class="card-img-top listing-img"
             alt="listing image"
           />
@@ -180,7 +183,7 @@
       const type = el.dataset.type;
       const urlParams = new URLSearchParams(window.location.search);
       urlParams.set("filter", type);
-      urlParams.set("page", 1); // reset to first page
+      urlParams.set("page", 1);
       window.location.search = urlParams.toString();
     });
   });
