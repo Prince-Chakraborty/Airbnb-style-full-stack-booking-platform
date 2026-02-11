@@ -1,6 +1,5 @@
 const Joi = require("joi");
 
-// ==================== LISTING SCHEMA ====================
 module.exports.listingSchema = Joi.object({
   listing: Joi.object({
     title: Joi.string()
@@ -25,7 +24,6 @@ module.exports.listingSchema = Joi.object({
       .min(0)
       .required(),
 
-    // ✅ ADD TYPE HERE
     type: Joi.string()
       .valid(
         "trending",
@@ -41,11 +39,15 @@ module.exports.listingSchema = Joi.object({
         "boats"
       )
       .required(),
-    
-    // OPTIONAL IMAGE
-    image: Joi.object({
-      url: Joi.string().uri(),
-      filename: Joi.string(),
-    }).allow(null),
+
+    // ✅ Multiple images
+    images: Joi.array()
+      .items(
+        Joi.object({
+          url: Joi.string().uri(),
+          filename: Joi.string(),
+        })
+      )
+      .min(0) // optional, can be empty
   }).required()
 });
