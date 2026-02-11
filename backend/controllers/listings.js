@@ -77,25 +77,13 @@ module.exports.renderNewForm = (req, res) => {
 // ==================== CREATE ====================
 module.exports.createListing = async (req, res) => {
   try {
-    const { listing } = req.body;
-
-    if (!listing.title || !listing.description || !listing.location || !listing.country) {
-      req.flash("error", "All fields are required");
-      return res.redirect("/listings/new");
-    }
-
-    listing.price = Number(listing.price);
-    if (isNaN(listing.price) || listing.price < 0) {
-      req.flash("error", "Price must be a valid positive number");
-      return res.redirect("/listings/new");
-    }
-
-    const newListing = new Listing(listing);
+    const newListing = new Listing(req.body);
     newListing.owner = req.user._id;
 
+    // Handle multiple file uploads
     if (req.files && req.files.length > 0) {
       newListing.images = req.files.map(file => ({
-        url: `/uploads/${file.filename}`,
+        url: file.path || `/uploads/${file.filename}`, // Cloudinary gives file.path
         filename: file.filename,
       }));
     }
@@ -164,24 +152,28 @@ module.exports.renderEditForm = async (req, res) => {
 module.exports.updateListing = async (req, res) => {
   try {
     const { id } = req.params;
-    const { listing } = req.body;
+    const listingData = req.body;
 
-    listing.price = Number(listing.price);
-    if (isNaN(listing.price) || listing.price < 0) {
+    listingData.price = Number(listingData.price);
+    if (isNaN(listingData.price) || listingData.price < 0) {
       req.flash("error", "Price must be a valid positive number");
       return res.redirect(`/listings/${id}/edit`);
     }
 
-    const updatedListing = await Listing.findByIdAndUpdate(id, listing, { new: true });
+    const updatedListing = await Listing.findByIdAndUpdate(id, listingData, { new: true });
 
-    // 🖼 Replace images if new uploaded, else preserve old ones
+    // Append new images instead of overwriting
     if (req.files && req.files.length > 0) {
-      updatedListing.images = req.files.map(file => ({
-        url: `/uploads/${file.filename}`,
+      const newImages = req.files.map(file => ({
+        url: file.path || `/uploads/${file.filename}`,
         filename: file.filename,
       }));
-    } else if ((!updatedListing.images || updatedListing.images.length === 0) && updatedListing.image) {
-      updatedListing.images = [{ url: typeof updatedListing.image === 'string' ? updatedListing.image : updatedListing.image.url }];
+      updatedListing.images = [...updatedListing.images, ...newImages];
+    }
+
+    // Fallback if no images exist
+    if (!updatedListing.images || updatedListing.images.length === 0) {
+      updatedListing.images = [{ url: "/images/default.jpg", filename: "default.jpg" }];
     }
 
     await updatedListing.save();
