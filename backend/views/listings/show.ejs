@@ -42,7 +42,9 @@
         <img 
             src="<%= 
                 (listing.images && listing.images.length > 0) ? listing.images[0].url
-                : (listing.image ? (listing.image.url || listing.image) : '/images/default.jpg') 
+                : (listing.image && listing.image.url) ? listing.image.url
+                : (typeof listing.image === 'string') ? listing.image
+                : '/images/default.jpg' 
             %>" 
             class="show-img" 
             alt="listing image"
