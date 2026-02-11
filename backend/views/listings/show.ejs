@@ -37,8 +37,16 @@
     </div>
 
     <div class="card col-6 offset-3 show-card listing-card">
+        
+        <!-- ✅ FIXED IMAGE SUPPORT -->
         <img 
-            src="<%= listing.image?.url || '/images/default.jpg' %>" 
+            src="<%= 
+                listing.images && listing.images.length > 0 
+                ? listing.images[0].url 
+                : (listing.image && listing.image.url 
+                    ? listing.image.url 
+                    : '/images/default.jpg') 
+            %>" 
             class="show-img" 
             alt="listing image"
         >
