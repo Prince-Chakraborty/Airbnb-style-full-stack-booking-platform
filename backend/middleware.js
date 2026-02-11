@@ -1,6 +1,5 @@
 const Listing = require("./models/listing");
 const Review = require("./models/review");
-const ExpressError = require("./utils/ExpressError");
 const { listingSchema, reviewSchema } = require("./schema");
 
 // ---------- LOGIN CHECK ----------
@@ -61,34 +60,36 @@ module.exports.isReviewAuthor = async (req, res, next) => {
 };
 
 // ---------- LISTING VALIDATION ----------
-// ---------- LISTING VALIDATION ----------
 module.exports.validateListing = (req, res, next) => {
   if (!req.body.listing) req.body.listing = {};
 
   // ✅ Convert price from string to number
-  if (req.body.listing.price) {
-    req.body.listing.price = Number(req.body.listing.price);
+  if (req.body.listing.price !== undefined) {
+    const priceNum = Number(req.body.listing.price);
+    if (isNaN(priceNum)) {
+      req.flash("error", "Price must be a valid number");
+      return req.method === "POST"
+        ? res.redirect("/listings/new")
+        : res.redirect(`/listings/${req.params.id}/edit`);
+    }
+    req.body.listing.price = priceNum;
   }
+
+  // Debug: log the final price value
+  console.log("Price being validated:", req.body.listing.price);
 
   const { error } = listingSchema.validate({ listing: req.body.listing });
 
   if (error) {
     const msg = error.details.map(el => el.message).join(", ");
     req.flash("error", msg);
-
-    // Redirect dynamically based on route
-    if (req.method === "POST") {
-      return res.redirect("/listings/new");
-    } else if (req.method === "PUT") {
-      const { id } = req.params;
-      return res.redirect(`/listings/${id}/edit`);
-    } else {
-      return res.redirect("/listings");
-    }
+    // Redirect dynamically based on request type
+    return req.method === "POST"
+      ? res.redirect("/listings/new")
+      : res.redirect(`/listings/${req.params.id}/edit`);
   }
   next();
 };
-
 
 // ---------- REVIEW VALIDATION ----------
 module.exports.validateReview = (req, res, next) => {
@@ -98,9 +99,8 @@ module.exports.validateReview = (req, res, next) => {
 
   if (error) {
     const msg = error.details.map(el => el.message).join(", ");
-    const { id } = req.params;
     req.flash("error", msg);
-    return res.redirect(`/listings/${id}`);
+    return res.redirect(`/listings/${req.params.id}`);
   }
   next();
 };
