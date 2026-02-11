@@ -123,16 +123,14 @@
         <div class="card listing-card">
 
           <!-- FIXED IMAGE SUPPORT -->
-          <img
+          <img 
           src="<%= 
-            listing.images && listing.images.length > 0
-              ? listing.images[0].url
-              : listing.image
-              ? (typeof listing.image === 'string' ? listing.image : listing.image.url)
-              : '/images/default.jpg'
-          %>"
-          class="card-img-top listing-img"
-          alt="listing image"
+          listing.images && listing.images.length > 0 
+          ? listing.images[0].url 
+          : '/images/default.jpg' 
+          %>" 
+          class="card-img-top listing-img" 
+          alt="Listing image">
           />
 
           <div class="card-body">
