@@ -6,24 +6,24 @@ module.exports.listingSchema = Joi.object({
       .min(5)
       .max(100)
       .required(),
-
     description: Joi.string()
       .min(20)
       .max(1000)
       .required(),
-
     location: Joi.string()
       .pattern(/^[a-zA-Z\s]+$/)
       .required(),
-
     country: Joi.string()
       .pattern(/^[a-zA-Z\s]+$/)
       .required(),
-
     price: Joi.number()
-      .min(0)
-      .required(),
-
+      .min(1)
+      .required()
+      .messages({
+        "number.base": "Price must be a valid positive number",
+        "number.min": "Price must be greater than 0",
+        "any.required": "Price is required",
+      }),
     type: Joi.string()
       .valid(
         "trending",
@@ -39,15 +39,5 @@ module.exports.listingSchema = Joi.object({
         "boats"
       )
       .required(),
-
-    // ✅ Multiple images
-    images: Joi.array()
-      .items(
-        Joi.object({
-          url: Joi.string().uri(),
-          filename: Joi.string(),
-        })
-      )
-      .min(0) // optional, can be empty
-  }).required()
+  }).required(),
 });
