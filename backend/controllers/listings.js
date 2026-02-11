@@ -1,14 +1,22 @@
 const Listing = require("../models/listing");
 
-// CREATE LISTING
+// ==================== CREATE LISTING ====================
 module.exports.createListing = async (req, res) => {
   try {
+    const { price } = req.body.listing;
+
+    // ✅ Validate price
+    if (!price || price <= 0 || !Number.isInteger(Number(price))) {
+      req.flash("error", "Price must be a positive integer.");
+      return res.redirect("/listings/new");
+    }
+
     const newListing = new Listing(req.body.listing);
 
     // ✅ Save Cloudinary images
     if (req.files && req.files.length > 0) {
       newListing.images = req.files.map(file => ({
-        url: file.path,       // Cloudinary gives full URL
+        url: file.path,
         filename: file.filename,
       }));
     }
@@ -25,10 +33,18 @@ module.exports.createListing = async (req, res) => {
   }
 };
 
-// UPDATE LISTING
+// ==================== UPDATE LISTING ====================
 module.exports.updateListing = async (req, res) => {
   try {
     const { id } = req.params;
+    const { price } = req.body.listing;
+
+    // ✅ Validate price
+    if (!price || price <= 0 || !Number.isInteger(Number(price))) {
+      req.flash("error", "Price must be a positive integer.");
+      return res.redirect(`/listings/${id}/edit`);
+    }
+
     const updatedListing = await Listing.findByIdAndUpdate(id, req.body.listing, { new: true });
 
     // ✅ Append new Cloudinary images instead of overwriting
@@ -51,7 +67,7 @@ module.exports.updateListing = async (req, res) => {
   }
 };
 
-// DELETE LISTING
+// ==================== DELETE LISTING ====================
 module.exports.destroyListing = async (req, res) => {
   try {
     const { id } = req.params;
@@ -66,7 +82,7 @@ module.exports.destroyListing = async (req, res) => {
   }
 };
 
-// SHOW LISTING
+// ==================== SHOW LISTING ====================
 module.exports.showListings = async (req, res) => {
   try {
     const { id } = req.params;
@@ -82,7 +98,7 @@ module.exports.showListings = async (req, res) => {
       return res.redirect("/listings");
     }
 
-    // Calculate average rating
+    // ✅ Calculate average rating
     let avgRating = 0;
     if (listing.reviews.length > 0) {
       avgRating = (
@@ -94,6 +110,27 @@ module.exports.showListings = async (req, res) => {
   } catch (err) {
     console.error(err);
     req.flash("error", "Failed to load listing.");
+    res.redirect("/listings");
+  }
+};
+
+// ==================== RENDER NEW & EDIT FORMS ====================
+module.exports.renderNewForm = (req, res) => {
+  res.render("listings/new");
+};
+
+module.exports.renderEditForm = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const listing = await Listing.findById(id);
+    if (!listing) {
+      req.flash("error", "Listing not found!");
+      return res.redirect("/listings");
+    }
+    res.render("listings/edit", { listing });
+  } catch (err) {
+    console.error(err);
+    req.flash("error", "Failed to load edit form.");
     res.redirect("/listings");
   }
 };
