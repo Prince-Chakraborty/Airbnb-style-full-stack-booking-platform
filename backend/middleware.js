@@ -61,18 +61,34 @@ module.exports.isReviewAuthor = async (req, res, next) => {
 };
 
 // ---------- LISTING VALIDATION ----------
+// ---------- LISTING VALIDATION ----------
 module.exports.validateListing = (req, res, next) => {
   if (!req.body.listing) req.body.listing = {};
+
+  // ✅ Convert price from string to number
+  if (req.body.listing.price) {
+    req.body.listing.price = Number(req.body.listing.price);
+  }
 
   const { error } = listingSchema.validate({ listing: req.body.listing });
 
   if (error) {
     const msg = error.details.map(el => el.message).join(", ");
     req.flash("error", msg);
-    return res.redirect("/listings/new");
+
+    // Redirect dynamically based on route
+    if (req.method === "POST") {
+      return res.redirect("/listings/new");
+    } else if (req.method === "PUT") {
+      const { id } = req.params;
+      return res.redirect(`/listings/${id}/edit`);
+    } else {
+      return res.redirect("/listings");
+    }
   }
   next();
 };
+
 
 // ---------- REVIEW VALIDATION ----------
 module.exports.validateReview = (req, res, next) => {
