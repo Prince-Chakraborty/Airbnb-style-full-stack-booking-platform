@@ -124,16 +124,17 @@
 
           <!-- ✅ FIXED IMAGE SUPPORT -->
           <img
-            src="<%= 
-                listing.images && listing.images.length > 0 
-                ? listing.images[0].url 
-                : (listing.image && listing.image.url 
-                    ? listing.image.url 
-                    : '/images/default.jpg') 
-            %>"
-            class="card-img-top listing-img"
-            alt="listing image"
+          src="<%= 
+          listing.images && listing.images.length > 0
+          ? listing.images[0].url
+          : listing.image
+          ? (typeof listing.image === 'string' ? listing.image : listing.image.url)
+          : '/images/default.jpg'
+          %>"
+          class="card-img-top listing-img"
+          alt="listing image"
           />
+
 
           <div class="card-body">
             <p class="card-text">
