@@ -9,27 +9,41 @@ const listingSchema = new Schema(
       required: [true, "Title cannot be empty"],
       trim: true,
     },
+
     description: {
       type: String,
       required: [true, "Description cannot be empty"],
       trim: true,
     },
-    image: {
-      url: {
-        type: String,
-        default: "/images/default.jpg",
-      },
-      filename: {
-        type: String,
-        default: "default.jpg",
-      },
+
+    // ✅ MULTIPLE IMAGES SUPPORT
+    images: {
+      type: [
+        {
+          url: {
+            type: String,
+            required: true,
+          },
+          filename: {
+            type: String,
+            required: true,
+          },
+        },
+      ],
+      default: [
+        {
+          url: "/images/default.jpg",
+          filename: "default.jpg",
+        },
+      ],
     },
+
     price: {
       type: Number,
       required: [true, "Price is required"],
       min: [0, "Price cannot be negative"],
     },
-    // ✅ REQUIRED FOR FILTERS & FIX DEFAULT
+
     type: {
       type: String,
       required: true,
@@ -44,26 +58,30 @@ const listingSchema = new Schema(
         "farms",
         "arctic",
         "domes",
-        "boats"
+        "boats",
       ],
       index: true,
-      default: "trending", // fallback default to avoid validation error
+      default: "trending",
     },
+
     location: {
       type: String,
       required: [true, "Location is required"],
       index: true,
     },
+
     country: {
       type: String,
       required: [true, "Country is required"],
     },
+
     reviews: [
       {
         type: Schema.Types.ObjectId,
         ref: "Review",
       },
     ],
+
     owner: {
       type: Schema.Types.ObjectId,
       ref: "User",
