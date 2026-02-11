@@ -1,6 +1,6 @@
 <% layout("/layout/boilerplate") %>
 
-<div class="row mt-3">
+<div class="row mt-4">
   <div class="col-8 offset-2">
     <h3>Create a New Listing</h3>
 
@@ -8,8 +8,8 @@
       method="POST"
       action="/listings"
       enctype="multipart/form-data"
-      novalidate
       class="needs-validation"
+      novalidate
     >
 
       <!-- TITLE -->
@@ -21,6 +21,9 @@
           class="form-control"
           required
         />
+        <div class="invalid-feedback">
+          Please enter a title.
+        </div>
       </div>
 
       <!-- DESCRIPTION -->
@@ -31,28 +34,38 @@
           class="form-control"
           required
         ></textarea>
+        <div class="invalid-feedback">
+          Please enter a description.
+        </div>
       </div>
 
-      <!-- IMAGE -->
+      <!-- MULTIPLE IMAGES -->
       <div class="mb-3">
-        <label class="form-label">Upload Image</label>
+        <label class="form-label">Upload Images</label>
         <input
-          name="image"
+          name="images"
           type="file"
           class="form-control"
+          multiple
         />
+        <small class="text-muted">You can upload up to 5 images.</small>
       </div>
 
       <!-- PRICE + COUNTRY -->
       <div class="row">
         <div class="mb-3 col-md-4">
-          <label class="form-label">Price</label>
+          <label class="form-label">Price (₹)</label>
           <input
             name="listing[price]"
             type="number"
             class="form-control"
+            min="0"
+            step="0.01"
             required
           />
+          <div class="invalid-feedback">
+            Please enter a valid price.
+          </div>
         </div>
 
         <div class="mb-3 col-md-8">
@@ -63,6 +76,9 @@
             class="form-control"
             required
           />
+          <div class="invalid-feedback">
+            Please enter a country.
+          </div>
         </div>
       </div>
 
@@ -75,12 +91,20 @@
           class="form-control"
           required
         />
+        <div class="invalid-feedback">
+          Please enter a location.
+        </div>
       </div>
 
-      <!-- TYPE (REQUIRED) -->
+      <!-- TYPE -->
       <div class="mb-3">
         <label class="form-label">Type</label>
-        <select name="listing[type]" class="form-select" required>
+        <select
+          name="listing[type]"
+          class="form-select"
+          required
+        >
+          <option value="">Select Category</option>
           <option value="trending">Trending</option>
           <option value="rooms">Rooms</option>
           <option value="iconic">Iconic</option>
@@ -93,9 +117,31 @@
           <option value="domes">Domes</option>
           <option value="boats">Boats</option>
         </select>
+        <div class="invalid-feedback">
+          Please select a category.
+        </div>
       </div>
 
       <button class="btn btn-dark mt-3">Add Listing</button>
+
     </form>
   </div>
 </div>
+
+<!-- Bootstrap Validation Script -->
+<script>
+  (() => {
+    'use strict'
+    const forms = document.querySelectorAll('.needs-validation')
+
+    Array.from(forms).forEach(form => {
+      form.addEventListener('submit', event => {
+        if (!form.checkValidity()) {
+          event.preventDefault()
+          event.stopPropagation()
+        }
+        form.classList.add('was-validated')
+      }, false)
+    })
+  })()
+</script>
