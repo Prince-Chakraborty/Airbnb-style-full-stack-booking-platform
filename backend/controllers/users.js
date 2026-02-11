@@ -5,38 +5,34 @@ module.exports.renderSignup = (req, res) => {
   res.render("users/signup.ejs");
 };
 
+// ---------- SIGNUP ----------
 module.exports.signup = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
 
-    // ✅ Backend email validation
     if (!/^[a-zA-Z0-9._%+-]+@gmail\.com$/.test(email)) {
       req.flash("error", "Please use a valid Gmail address.");
       return res.redirect("/signup");
     }
 
-    // ✅ Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       req.flash("error", "Email already registered. Please login.");
       return res.redirect("/signup");
     }
 
-    // ✅ Create new user
     const newUser = new User({ email, username });
     await User.register(newUser, password);
 
-    // ✅ Auto-login after signup
-    req.login(newUser, (err) => {
-      if (err) return next(err);
-      req.flash("success", `Welcome, ${username}! Your account is created.`);
-      res.redirect("/listings");
-    });
+    // ❌ Remove auto-login
+    req.flash("success", `Account created! Please login.`);
+    res.redirect("/login");   // ✅ Redirect to login page after signup
   } catch (e) {
     req.flash("error", e.message);
     res.redirect("/signup");
   }
 };
+
 
 // ---------- LOGIN ----------
 module.exports.renderLoginForm = (req, res) => {
