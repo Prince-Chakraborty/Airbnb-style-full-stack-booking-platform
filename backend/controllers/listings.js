@@ -1,5 +1,16 @@
 const Listing = require("../models/listing");
 
+// ==================== HELPER ====================
+function getMainImage(listing) {
+  if (listing.images && listing.images.length > 0) {
+    return listing.images[0].url;        // New listings
+  } else if (listing.image && listing.image.url) {
+    return listing.image.url;            // Old listings
+  } else {
+    return "/images/default.jpg";        // Fallback
+  }
+}
+
 // ==================== INDEX ====================
 module.exports.index = async (req, res) => {
   try {
@@ -44,6 +55,7 @@ module.exports.index = async (req, res) => {
 
     res.render("listings/index.ejs", {
       allListings,
+      getMainImage,           // Pass helper to EJS
       search: search || "",
       filter: filter || "",
       sort: sort || "",
@@ -67,7 +79,6 @@ module.exports.renderNewForm = (req, res) => {
 };
 
 // ==================== CREATE ====================
-// ==================== CREATE ====================
 module.exports.createListing = async (req, res) => {
   try {
     const { listing } = req.body;
@@ -86,10 +97,10 @@ module.exports.createListing = async (req, res) => {
     const newListing = new Listing(listing);
     newListing.owner = req.user._id;
 
-    // 🖼 Multiple Image Upload - FIXED
+    // 🖼 Multiple Image Upload
     if (req.files && req.files.length > 0) {
       newListing.images = req.files.map(file => ({
-        url: `/uploads/${file.filename}`,   // ✅ FIXED
+        url: `/uploads/${file.filename}`,
         filename: file.filename,
       }));
     }
@@ -104,7 +115,6 @@ module.exports.createListing = async (req, res) => {
     res.redirect("/listings/new");
   }
 };
-
 
 // ==================== SHOW ====================
 module.exports.showListings = async (req, res) => {
@@ -123,6 +133,7 @@ module.exports.showListings = async (req, res) => {
 
     res.render("listings/show.ejs", {
       listing,
+      mainImageUrl: getMainImage(listing), // Use helper for show page
       activePage: "explore"
     });
 
@@ -155,7 +166,6 @@ module.exports.renderEditForm = async (req, res) => {
 };
 
 // ==================== UPDATE ====================
-// ==================== UPDATE ====================
 module.exports.updateListing = async (req, res) => {
   try {
     const { id } = req.params;
@@ -169,10 +179,10 @@ module.exports.updateListing = async (req, res) => {
 
     const updatedListing = await Listing.findByIdAndUpdate(id, listing, { new: true });
 
-    // 🖼 Replace Images If New Uploaded - FIXED
+    // 🖼 Replace Images If New Uploaded
     if (req.files && req.files.length > 0) {
       updatedListing.images = req.files.map(file => ({
-        url: `/uploads/${file.filename}`,  // ✅ FIXED
+        url: `/uploads/${file.filename}`,
         filename: file.filename,
       }));
       await updatedListing.save();
@@ -186,7 +196,6 @@ module.exports.updateListing = async (req, res) => {
     res.redirect(`/listings/${req.params.id}/edit`);
   }
 };
-
 
 // ==================== DELETE ====================
 module.exports.destroyListing = async (req, res) => {
