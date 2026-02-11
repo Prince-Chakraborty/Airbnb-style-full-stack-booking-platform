@@ -3,12 +3,17 @@ const Listing = require("../models/listing");
 // ==================== CREATE LISTING ====================
 module.exports.createListing = async (req, res) => {
   try {
+    // ✅ Ensure price is a number
+    if (req.body.listing.price) {
+      req.body.listing.price = Number(req.body.listing.price);
+    }
+
     const newListing = new Listing(req.body.listing);
 
     // ✅ Save Cloudinary images
     if (req.files && req.files.length > 0) {
       newListing.images = req.files.map(file => ({
-        url: file.path,       // Cloudinary URL
+        url: file.path,
         filename: file.filename,
       }));
     }
@@ -33,11 +38,16 @@ module.exports.updateListing = async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Update the listing
+    // ✅ Ensure price is a number before update
+    if (req.body.listing.price) {
+      req.body.listing.price = Number(req.body.listing.price);
+    }
+
+    // Update the listing with validators
     const updatedListing = await Listing.findByIdAndUpdate(
       id,
       req.body.listing,
-      { new: true }
+      { new: true, runValidators: true, context: "query" } // ✅ important
     );
 
     // Append new images
