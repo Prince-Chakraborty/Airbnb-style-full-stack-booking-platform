@@ -63,11 +63,11 @@ module.exports.isReviewAuthor = async (req, res, next) => {
 module.exports.validateListing = (req, res, next) => {
   if (!req.body.listing) req.body.listing = {};
 
-  // ✅ Convert price from string to number
+  // ✅ Convert price from string to number safely
   if (req.body.listing.price !== undefined) {
     const priceNum = Number(req.body.listing.price);
-    if (isNaN(priceNum)) {
-      req.flash("error", "Price must be a valid number");
+    if (isNaN(priceNum) || priceNum <= 0) {
+      req.flash("error", "Price must be a valid positive number");
       return req.method === "POST"
         ? res.redirect("/listings/new")
         : res.redirect(`/listings/${req.params.id}/edit`);
@@ -75,15 +75,11 @@ module.exports.validateListing = (req, res, next) => {
     req.body.listing.price = priceNum;
   }
 
-  // Debug: log the final price value
-  console.log("Price being validated:", req.body.listing.price);
-
   const { error } = listingSchema.validate({ listing: req.body.listing });
 
   if (error) {
     const msg = error.details.map(el => el.message).join(", ");
     req.flash("error", msg);
-    // Redirect dynamically based on request type
     return req.method === "POST"
       ? res.redirect("/listings/new")
       : res.redirect(`/listings/${req.params.id}/edit`);
